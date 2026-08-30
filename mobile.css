@@ -1,7 +1,7 @@
 /* Cayde-6 brand mark and compact-screen polish */
 .mark,.brand-mark{overflow:hidden;object-fit:cover;object-position:center;background:#152131}
 .mark{width:64px;height:64px;border:1px solid #426177;border-radius:50%;box-shadow:0 10px 28px #0006}
-.brand-mark{font-size:0;background-image:url("assets/cayde-6-icon.jpg");background-position:center;background-size:cover}
+.brand-mark{font-size:0;background-image:url("assets/cayde-6-icon-transparent.png");background-position:center;background-size:cover}
 @media(max-width:760px){
   body{overflow-x:hidden}
   .topbar{gap:10px}
