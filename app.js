@@ -70,7 +70,10 @@
 
   async function submitAuth(event) {
     event.preventDefault();
-    if (!client) return;
+    if (!client) {
+      showAuthError("Authentication is still loading. Refresh the page and try again.");
+      return;
+    }
     const username = authUsername.value.trim();
     const password = authPassword.value;
     authSubmit.disabled = true;
