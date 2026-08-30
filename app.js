@@ -17,15 +17,16 @@
     try { return sessionStorage.getItem("cayde-project-manager-demo") === "open"; } catch { return false; }
   };
 
-  const openApp = () => { gate.hidden = true; app.hidden = false; password.value = ""; };
+  const openApp = () => { gate.hidden = true; gate.style.display = "none"; app.hidden = false; app.style.display = "flex"; password.value = ""; };
   const lock = () => { app.hidden = true; gate.hidden = false; password.focus(); };
   const notify = message => { toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 2600); };
 
-  document.querySelector("#gate-form").addEventListener("submit", event => {
-    event.preventDefault();
+  const tryOpen = () => {
     if (demoPasswords.has(password.value.trim())) { error.textContent = ""; openApp(); saveSession("open"); }
     else { error.textContent = "That demo password did not match."; password.select(); }
-  });
+  };
+  document.querySelector("#gate-form").addEventListener("submit", event => { event.preventDefault(); tryOpen(); });
+  document.querySelector("#open-dashboard").addEventListener("click", tryOpen);
   const togglePassword = document.querySelector("#toggle-password");
   togglePassword.addEventListener("click", () => {
     const isVisible = password.type === "password";
