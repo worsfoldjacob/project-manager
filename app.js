@@ -16,11 +16,25 @@
     if (password.value === demoPassword) { error.textContent = ""; sessionStorage.setItem("market-strider-demo", "open"); openApp(); }
     else { error.textContent = "That demo password did not match. Try stride-demo."; password.select(); }
   });
-  document.querySelector("#toggle-password").addEventListener("click", () => { password.type = password.type === "password" ? "text" : "password"; });
+  const togglePassword = document.querySelector("#toggle-password");
+  togglePassword.addEventListener("click", () => {
+    const isVisible = password.type === "password";
+    password.type = isVisible ? "text" : "password";
+    togglePassword.setAttribute("aria-label", isVisible ? "Hide password" : "Show password");
+    togglePassword.setAttribute("aria-pressed", String(isVisible));
+  });
   document.querySelector("#lock-button").addEventListener("click", () => { sessionStorage.removeItem("market-strider-demo"); lock(); });
   document.querySelector("#menu-button").addEventListener("click", () => app.classList.toggle("nav-open"));
   document.querySelectorAll(".sidebar nav a").forEach(link => link.addEventListener("click", () => app.classList.remove("nav-open")));
   document.querySelector("#new-task").addEventListener("click", () => notify("Demo mode: task creation is ready to connect."));
-  document.querySelector(".share-button").addEventListener("click", () => notify("Project update copied to your demo workspace."));
+  document.querySelector(".share-button").addEventListener("click", async () => {
+    const shareText = "Market Strider Leaderboard is 68% complete — momentum is building.";
+    try {
+      await navigator.clipboard.writeText(shareText);
+      notify("Project update copied to your clipboard.");
+    } catch {
+      notify("Copy is unavailable in this browser. Run the site over HTTPS to enable it.");
+    }
+  });
   if (sessionStorage.getItem("market-strider-demo") === "open") openApp(); else password.focus();
 })();
