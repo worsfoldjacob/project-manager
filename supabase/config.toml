@@ -13,7 +13,6 @@ enabled = true
 enabled = true
 site_url = "https://pm.w-software.net"
 additional_redirect_urls = ["http://localhost:8000", "http://127.0.0.1:8000"]
-enable_confirmations = true
 
 [auth.mfa]
 max_enrolled_factors = 10
@@ -23,6 +22,7 @@ enroll_enabled = true
 verify_enabled = true
 
 [auth.email]
+enable_confirmations = true
 max_frequency = "1m0s"
 otp_length = 8
 
