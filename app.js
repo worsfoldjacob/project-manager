@@ -8,7 +8,6 @@
   const authEmail = document.querySelector("#email");
   const authPassword = document.querySelector("#password");
   const authSubmit = document.querySelector("#auth-submit");
-  const authMode = document.querySelector("#auth-mode");
   const authError = document.querySelector("#gate-error");
   const toast = document.querySelector("#toast");
   const projectSelect = document.querySelector("#project-select");
@@ -75,15 +74,11 @@
     if (!client) return;
     const email = authEmail.value.trim();
     const password = authPassword.value;
-    const signUp = authMode.checked;
     authSubmit.disabled = true;
     showAuthError("");
-    const result = signUp
-      ? await client.auth.signUp({ email, password })
-      : await client.auth.signInWithPassword({ email, password });
+    const result = await client.auth.signInWithPassword({ email, password });
     authSubmit.disabled = false;
     if (result.error) { showAuthError(result.error.message); return; }
-    if (signUp && !result.data.session) showAuthError("Check your email to confirm the new account, then sign in.");
   }
 
   async function loadProjects() {

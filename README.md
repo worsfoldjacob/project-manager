@@ -6,7 +6,7 @@ A static GitHub Pages-ready project workspace backed by Supabase Auth and the in
 
 1. Apply `supabase/migrations/20260830121000_project_manager.sql` to Supabase project `zhgwhsrhrfsjdupikobo`.
 2. `config.js` contains this project's browser-safe publishable key and is ready for the static deployment.
-3. In Supabase Auth URL configuration, add the GitHub Pages/custom-domain URL as an allowed redirect URL and enable Email authentication.
+3. In Supabase Auth URL configuration, add the GitHub Pages/custom-domain URL as an allowed redirect URL and enable Email authentication. Public sign-ups are disabled by `supabase/config.toml`.
 
 The key in `config.js` is intentionally browser-visible. It must be an anon or publishable key only; do not place a service-role key, database password, or other secret in this repository.
 
@@ -18,7 +18,11 @@ Run a local static server from this folder:
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`. You can sign up with email and password, sign in, create projects, tasks, milestones, and task notes, and see the activity log. Sessions persist through browser refreshes; logging out returns to the sign-in screen.
+Then visit `http://localhost:8000`. Sign in with a privately provisioned email-and-password account, then create projects, tasks, milestones, and task notes, and see the activity log. Sessions persist through browser refreshes; logging out returns to the sign-in screen.
+
+## Private account provisioning
+
+Public registration is disabled. To create the initial owner account, an owner should use the Supabase project dashboard's **Authentication → Users → Add user** control (or the trusted server-side Admin API with a service-role key kept outside this repository), set the email and password, and complete/confirm the account as required by the project's email-confirmation policy. The account can then sign in through the dashboard.
 
 ## Deployment
 
