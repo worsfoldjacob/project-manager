@@ -5,7 +5,7 @@ A static GitHub Pages-ready project workspace backed by Supabase Auth and the in
 ## Configure Supabase
 
 1. Apply `supabase/migrations/20260830121000_project_manager.sql` to Supabase project `zhgwhsrhrfsjdupikobo`.
-2. In `config.js`, replace `replace-with-the-public-anon-key` with the project's browser-safe Supabase anon or publishable key.
+2. `config.js` contains this project's browser-safe publishable key and is ready for the static deployment.
 3. In Supabase Auth URL configuration, add the GitHub Pages/custom-domain URL as an allowed redirect URL and enable Email authentication.
 
 The key in `config.js` is intentionally browser-visible. It must be an anon or publishable key only; do not place a service-role key, database password, or other secret in this repository.
