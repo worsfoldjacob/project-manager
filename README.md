@@ -1,31 +1,32 @@
 # Cayde-6 Project Manager
 
-A responsive, static GitHub Pages-ready project-management dashboard. It includes generic example projects and tasks, and uses plain HTML, CSS, and JavaScript—no build step, dependencies, API calls, or external data sources.
+A static GitHub Pages-ready project workspace backed by Supabase Auth and the included RLS schema. Each signed-in user can only access projects they own.
+
+## Configure Supabase
+
+1. Apply `supabase/migrations/20260830121000_project_manager.sql` to Supabase project `zhgwhsrhrfsjdupikobo`.
+2. In `config.js`, replace `replace-with-the-public-anon-key` with the project's browser-safe Supabase anon or publishable key.
+3. In Supabase Auth URL configuration, add the GitHub Pages/custom-domain URL as an allowed redirect URL and enable Email authentication.
+
+The key in `config.js` is intentionally browser-visible. It must be an anon or publishable key only; do not place a service-role key, database password, or other secret in this repository.
 
 ## Local preview
 
-Open `index.html` directly in a modern browser, or run a simple local static server from this folder:
+Run a local static server from this folder:
 
 ```powershell
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`.
+Then visit `http://localhost:8000`. You can sign up with email and password, sign in, create projects, tasks, milestones, and task notes, and see the activity log. Sessions persist through browser refreshes; logging out returns to the sign-in screen.
 
-The demo password is `cayde-demo`. It is deliberately public and stored in the client-side JavaScript solely to demonstrate the app-password interaction. It is **not** authentication and must not be used to protect real content or secrets.
+## Deployment
 
-## GitHub Pages deployment
-
-1. Push this branch to the repository that will host the site.
-2. In GitHub, open **Settings → Pages**.
-3. Select **Deploy from a branch**, then select the branch and the repository root (`/`).
-4. Save. GitHub Pages will publish `index.html`.
-
-`CNAME` sets the intended custom domain to `pm.w-software.net`. Before enabling it, configure the matching DNS record with the domain provider and ensure the repository is permitted to use that domain.
+Push the branch and configure GitHub Pages to deploy from the repository root. `CNAME` preserves the configured custom domain (`pm.w-software.net`).
 
 ## Files
 
-- `index.html` — dashboard markup and accessible structure
-- `styles.css` — responsive visual design
-- `app.js` — local demo gate and small UI interactions
-- `CNAME` — GitHub Pages custom-domain declaration
+- `index.html` — accessible dashboard and editor markup
+- `app.js` — Supabase browser authentication and RLS-backed persistence
+- `config.js` — public browser Supabase configuration
+- `supabase/migrations/` — schema and RLS policies

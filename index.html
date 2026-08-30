@@ -9,72 +9,25 @@
   </head>
   <body>
     <div class="gate" id="gate" aria-modal="true" role="dialog" aria-labelledby="gate-title">
-      <form class="gate-card" id="gate-form">
-        <div class="mark">C6</div>
-        <p class="eyebrow">Private workspace</p>
-        <h1 id="gate-title">Cayde-6 Project Manager</h1>
-        <p>Enter the demo app password to view the project dashboard.</p>
-        <label for="password">App password</label>
-        <div class="password-row">
-          <input id="password" type="password" autocomplete="current-password" required>
-          <button class="icon-button" id="toggle-password" type="button" aria-label="Show password">◉</button>
-        </div>
-        <p class="gate-error" id="gate-error" role="alert"></p>
-        <button class="primary-button" id="open-dashboard" type="button">Open dashboard <span>→</span></button>
-        <p class="gate-note">Demo only — this client-side gate is not security.</p>
+      <form class="gate-card" id="auth-form">
+        <div class="mark">C6</div><p class="eyebrow">Private workspace</p><h1 id="gate-title">Cayde-6 Project Manager</h1>
+        <p>Sign in to securely access your projects.</p>
+        <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+        <label for="password">Password</label><div class="password-row"><input id="password" type="password" autocomplete="current-password" minlength="6" required><button class="icon-button" id="toggle-password" type="button" aria-label="Show password">◉</button></div>
+        <label class="auth-switch"><input id="auth-mode" type="checkbox"> Create a new account</label><p class="gate-error" id="gate-error" role="alert"></p>
+        <button class="primary-button" id="auth-submit" type="submit">Continue <span>→</span></button><p class="gate-note">Authentication is provided by Supabase.</p>
       </form>
     </div>
-
     <div class="app-shell" id="app" hidden>
-      <aside class="sidebar">
-        <a class="brand" href="#top" aria-label="Cayde-6 Project Manager home"><span class="brand-mark">C6</span><span>cayde-6<br>project manager</span></a>
-        <nav aria-label="Project navigation">
-          <a class="active" href="#overview"><span>◈</span> Overview</a>
-          <a href="#board"><span>▦</span> Task board <b>12</b></a>
-          <a href="#milestones"><span>◯</span> Milestones</a>
-          <a href="#activity"><span>◌</span> Activity</a>
-        </nav>
-        <div class="sidebar-bottom">
-          <div class="mini-progress"><div><span>Portfolio progress</span><strong>76%</strong></div><i><em></em></i><small>3 active projects</small></div>
-          <button id="lock-button" class="lock-button" type="button">⇥ &nbsp; Lock workspace</button>
-        </div>
-      </aside>
-
-      <main id="top">
-        <header class="topbar">
-          <button class="menu-button" id="menu-button" type="button" aria-label="Toggle navigation">☰</button>
-          <div class="crumb"><span>Projects</span><i>/</i> Website refresh</div>
-          <div class="top-actions"><button class="bell" type="button" aria-label="Notifications">♧<i></i></button><div class="avatar">JW</div></div>
-        </header>
-
-        <div class="dashboard-content">
-          <section class="project-head" id="overview">
-            <div><p class="eyebrow">Active project <span class="live-dot"></span> On track</p><h1>Website<br><em>refresh</em></h1><p class="lede">A focused rollout to make the company site clearer, faster, and easier to maintain.</p></div>
-            <div class="head-actions"><button class="share-button" type="button">→ Share update</button><button class="primary-button compact" type="button" id="new-task">+ New task</button></div>
-          </section>
-
-          <section class="summary-grid" aria-label="Project summary">
-            <article class="progress-card"><div class="card-label">Project progress <strong>68%</strong></div><div class="progress-ring" aria-label="68 percent complete"><svg viewBox="0 0 42 42"><circle class="ring-bg" cx="21" cy="21" r="15.9"/><circle class="ring-value" cx="21" cy="21" r="15.9"/></svg><span>68<small>%</small></span></div><div class="progress-copy"><strong>Release is on track.</strong><p>8 tasks closed this week — the team is ahead of pace.</p></div></article>
-            <article class="stat-card"><p class="card-label">Tasks complete</p><strong class="stat-number">24<span>/35</span></strong><div class="stat-foot"><span class="up">↑ 6</span> since last week</div></article>
-            <article class="stat-card"><p class="card-label">Next milestone</p><strong class="date-number">Sep <span>12</span></strong><p class="milestone-name">Content review complete</p><div class="stat-foot">in <b>13 days</b></div></article>
-            <article class="team-card"><p class="card-label">Project team</p><div class="avatars"><span class="a1">JW</span><span class="a2">AM</span><span class="a3">SL</span><span class="a4">RK</span><span class="more">+3</span></div><a href="#activity">View team activity →</a></article>
-          </section>
-
-          <section class="section-head" id="board"><div><p class="eyebrow">Current sprint</p><h2>Preparing the <em>launch.</em></h2></div><div class="sprint-meta"><span>SPRINT 04</span><b>Aug 26 — Sep 6</b></div></section>
-          <section class="kanban" aria-label="Current sprint task board">
-            <div class="board-column"><div class="column-title"><h3>Up next <span>3</span></h3><button type="button" aria-label="Add task">+</button></div><article class="task-card"><div><span class="tag design">Design</span><button class="dots" aria-label="Task options">•••</button></div><h4>Draft page templates</h4><p>Define reusable layouts for core site pages.</p><footer><span class="mini-avatar a2">AM</span><span>Sep 02</span><b>◌ 4</b></footer></article><article class="task-card"><div><span class="tag product">Product</span><button class="dots" aria-label="Task options">•••</button></div><h4>Confirm launch priorities</h4><footer><span class="mini-avatar a1">JW</span><span>Sep 03</span></footer></article><article class="task-card"><div><span class="tag research">Research</span><button class="dots" aria-label="Task options">•••</button></div><h4>Review customer feedback</h4><footer><span class="mini-avatar a3">SL</span><span>Sep 05</span><b>◌ 2</b></footer></article></div>
-            <div class="board-column"><div class="column-title"><h3>In progress <span>3</span></h3><button type="button" aria-label="Add task">+</button></div><article class="task-card featured"><div><span class="tag engineering">Engineering</span><button class="dots" aria-label="Task options">•••</button></div><h4>Build content migration tool</h4><p>Prepare existing pages for the updated structure.</p><div class="task-progress"><i><em></em></i><span>70%</span></div><footer><span class="mini-avatar a4">RK</span><span>Aug 31</span><b>◌ 8</b></footer></article><article class="task-card"><div><span class="tag design">Design</span><button class="dots" aria-label="Task options">•••</button></div><h4>Update component library</h4><footer><span class="mini-avatar a2">AM</span><span>Sep 01</span><b>◌ 5</b></footer></article><article class="task-card"><div><span class="tag engineering">Engineering</span><button class="dots" aria-label="Task options">•••</button></div><h4>Set up analytics events</h4><footer><span class="mini-avatar a4">RK</span><span>Sep 04</span></footer></article></div>
-            <div class="board-column"><div class="column-title"><h3>In review <span>2</span></h3><button type="button" aria-label="Add task">+</button></div><article class="task-card"><div><span class="tag engineering">Engineering</span><button class="dots" aria-label="Task options">•••</button></div><h4>Performance improvements</h4><p>Validate page speed and accessibility updates.</p><footer><span class="mini-avatar a4">RK</span><span>Today</span><b>◌ 12</b></footer></article><article class="task-card"><div><span class="tag copy">Content</span><button class="dots" aria-label="Task options">•••</button></div><h4>Review launch announcement</h4><footer><span class="mini-avatar a3">SL</span><span>Today</span><b>◌ 3</b></footer></article></div>
-            <div class="board-column done"><div class="column-title"><h3>Done <span>4</span></h3><button type="button" aria-label="Add task">+</button></div><article class="task-card"><div><span class="tag product">Product</span><span class="check">✓</span></div><h4>Document project goals</h4><footer><span class="mini-avatar a1">JW</span><span>Aug 28</span></footer></article><article class="task-card"><div><span class="tag engineering">Engineering</span><span class="check">✓</span></div><h4>Confirm roles &amp; permissions</h4><footer><span class="mini-avatar a4">RK</span><span>Aug 27</span></footer></article></div>
-          </section>
-
-          <section class="lower-grid"><article class="milestones" id="milestones"><div class="section-title"><div><p class="eyebrow">Delivery plan</p><h2>Milestones</h2></div><a href="#milestones">View all →</a></div><ol><li class="completed"><span>✓</span><div><strong>Planning &amp; discovery</strong><small>Aug 09 — Aug 23</small></div><b>Complete</b></li><li class="current"><span>2</span><div><strong>Build &amp; content</strong><small>Aug 26 — Sep 12</small></div><b>In progress</b></li><li><span>3</span><div><strong>Stakeholder review</strong><small>Sep 13 — Sep 20</small></div><b>Upcoming</b></li><li><span>4</span><div><strong>Launch</strong><small>Oct 01</small></div><b>Upcoming</b></li></ol></article>
-          <article class="activity" id="activity"><div class="section-title"><div><p class="eyebrow">Live feed</p><h2>Notes &amp; activity</h2></div><button type="button" aria-label="More activity options">•••</button></div><div class="activity-item"><span class="mini-avatar a2">AM</span><p><b>Amelia</b> moved <strong>Update component library</strong> to In progress.<small>24 min ago</small></p></div><div class="activity-item"><span class="mini-avatar a4">RK</span><p><b>Ravi</b> left a note on <strong>Performance improvements</strong>.<small>1 hr ago</small></p></div><blockquote>“The latest build feels much easier to navigate. Let’s carry that clarity through the remaining page templates.”<cite>— Jordan, Product</cite></blockquote></article></section>
-          <footer class="page-footer"><span>CAYDE-6 PROJECT MANAGER</span><span>Last updated today at 09:42</span></footer>
-        </div>
-      </main>
+      <aside class="sidebar"><a class="brand" href="#top"><span class="brand-mark">C6</span><span>cayde-6<br>project manager</span></a><nav aria-label="Project navigation"><a class="active" href="#overview"><span>◈</span> Overview</a><a href="#board"><span>▦</span> Task board <b id="task-count">0</b></a><a href="#milestones"><span>◯</span> Milestones</a><a href="#activity"><span>◌</span> Activity</a></nav><div class="sidebar-bottom"><button id="new-project" class="lock-button" type="button">+ New project</button><button id="logout-button" class="lock-button" type="button">⇥ &nbsp; Log out</button></div></aside>
+      <main id="top"><header class="topbar"><button class="menu-button" id="menu-button" type="button" aria-label="Toggle navigation">☰</button><div class="crumb"><span>Projects</span><i>/</i><select id="project-select" aria-label="Current project"></select></div><div class="top-actions"><div class="avatar" id="user-avatar">PM</div></div></header>
+        <div class="dashboard-content"><section class="project-head" id="overview"><div><p class="eyebrow">Active project <span class="live-dot"></span> On track</p><h1 id="project-name">Your projects</h1><p class="lede" id="project-description">Sign in to load your workspace.</p></div><div class="head-actions"><button class="share-button" id="new-milestone" type="button">+ Milestone</button><button class="primary-button compact" type="button" id="new-task">+ New task</button></div></section>
+          <section class="section-head" id="board"><div><p class="eyebrow">Current sprint</p><h2>Preparing the <em>launch.</em></h2></div></section><section class="kanban" id="task-columns" aria-label="Current sprint task board"></section>
+          <section class="lower-grid"><article class="milestones" id="milestones"><div class="section-title"><div><p class="eyebrow">Delivery plan</p><h2>Milestones</h2></div></div><ol id="milestone-list"></ol></article><article class="activity" id="activity"><div class="section-title"><div><p class="eyebrow">Live feed</p><h2>Notes &amp; activity</h2></div></div><div id="activity-list"></div><div id="notes-list"></div></article></section><footer class="page-footer"><span>CAYDE-6 PROJECT MANAGER</span><span>Synced with Supabase</span></footer>
+        </div></main>
     </div>
+    <dialog id="editor-dialog" class="editor-dialog"><form method="dialog"><div class="section-title"><h2 id="editor-title">New item</h2><button type="button" data-close-dialog aria-label="Close">×</button></div><div id="editor-fields"></div><button class="primary-button" type="submit">Save</button></form></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=8"></script>
+    <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script>
   </body>
 </html>
