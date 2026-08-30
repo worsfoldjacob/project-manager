@@ -18,7 +18,7 @@
   };
 
   const openApp = () => { gate.hidden = true; gate.style.display = "none"; app.hidden = false; app.style.display = "flex"; password.value = ""; };
-  const lock = () => { app.hidden = true; gate.hidden = false; password.focus(); };
+  const lock = () => { app.hidden = true; app.style.display = "none"; gate.hidden = false; gate.style.display = "grid"; password.focus(); };
   const notify = message => { toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 2600); };
 
   const tryOpen = () => {
