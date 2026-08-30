@@ -26,6 +26,7 @@
   let session;
   let currentProject;
   let toastTimer;
+  const ALL_PROJECTS_ID = "__all__";
 
   const columns = [
     ["up_next", "Up next"], ["in_progress", "In progress"], ["in_review", "In review"], ["done", "Done"]
@@ -114,21 +115,23 @@
       projectSelect.innerHTML = '<option value="">No projects yet</option>';
       return;
     }
+    projectSelect.insertAdjacentHTML("beforeend", `<option value="${ALL_PROJECTS_ID}">ALL</option>`);
     data.forEach(project => projectSelect.insertAdjacentHTML("beforeend", `<option value="${project.id}">${escapeHtml(project.name)}</option>`));
-    currentProject = data.find(project => project.id === currentProject?.id) || data[0];
+    currentProject = { id: ALL_PROJECTS_ID, name: "ALL", description: "All projects and work in one view." };
     projectSelect.value = currentProject.id;
     await loadProjectData();
   }
 
   async function loadProjectData() {
     if (!currentProject) return renderEmpty();
+    const allProjects = currentProject.id === ALL_PROJECTS_ID;
     projectName.textContent = currentProject.name;
-    projectDescription.textContent = currentProject.description || "Keep your work clear, organized, and moving forward.";
+    projectDescription.textContent = allProjects ? "All projects and work in one view." : currentProject.description || "Keep your work clear, organized, and moving forward.";
     userAvatar.textContent = initials(session?.user?.email);
     const [tasksResult, milestonesResult, activityResult] = await Promise.all([
-      client.from("tasks").select("*").eq("project_id", currentProject.id).order("position").order("created_at"),
-      client.from("milestones").select("*").eq("project_id", currentProject.id).order("position").order("due_date"),
-      client.from("activity_events").select("*").eq("project_id", currentProject.id).order("created_at", { ascending: false }).limit(12)
+      allProjects ? client.from("tasks").select("*").order("position").order("created_at") : client.from("tasks").select("*").eq("project_id", currentProject.id).order("position").order("created_at"),
+      allProjects ? client.from("milestones").select("*").order("position").order("due_date") : client.from("milestones").select("*").eq("project_id", currentProject.id).order("position").order("due_date"),
+      allProjects ? client.from("activity_events").select("*").order("created_at", { ascending: false }).limit(12) : client.from("activity_events").select("*").eq("project_id", currentProject.id).order("created_at", { ascending: false }).limit(12)
     ]);
     const failure = [tasksResult, milestonesResult, activityResult].find(result => result.error);
     if (failure) { notify(`Could not load workspace: ${failure.error.message}`); return; }
@@ -205,7 +208,7 @@
       const { error: requestError } = await client.from("task_notes").insert({ task_id: values.task_id, author_id: session.user.id, body: values.body }); error = requestError;
     }
     if (error) { notify(`Could not save: ${error.message}`); return; }
-    if (currentProject && kind !== "note") await client.from("activity_events").insert({ project_id: currentProject.id, actor_id: session.user.id, event_type: `${kind}_created`, message: `Created ${kind}: ${values.name || "note"}.` });
+    if (currentProject && currentProject.id !== ALL_PROJECTS_ID && kind !== "note") await client.from("activity_events").insert({ project_id: currentProject.id, actor_id: session.user.id, event_type: `${kind}_created`, message: `Created ${kind}: ${values.name || "note"}.` });
     dialog.close();
     notify(`${kind[0].toUpperCase()}${kind.slice(1)} saved.`);
     await loadProjects();
@@ -224,10 +227,14 @@
   });
   document.querySelector("#menu-button").addEventListener("click", () => app.classList.toggle("nav-open"));
   document.querySelectorAll(".sidebar nav a").forEach(link => link.addEventListener("click", () => app.classList.remove("nav-open")));
-  document.querySelector("#new-task").addEventListener("click", () => currentProject ? openEditor("task") : openEditor("project"));
+  document.querySelector("#new-task").addEventListener("click", () => currentProject && currentProject.id !== ALL_PROJECTS_ID ? openEditor("task") : notify("Select a project before creating a task."));
   document.querySelector("#new-project").addEventListener("click", () => openEditor("project"));
-  document.querySelector("#new-milestone").addEventListener("click", () => currentProject ? openEditor("milestone") : openEditor("project"));
-  projectSelect.addEventListener("change", event => { currentProject = { id: event.target.value, name: event.target.selectedOptions[0].textContent }; loadProjectData(); });
+  document.querySelector("#new-milestone").addEventListener("click", () => currentProject && currentProject.id !== ALL_PROJECTS_ID ? openEditor("milestone") : notify("Select a project before creating a milestone."));
+  projectSelect.addEventListener("change", event => {
+    if (event.target.value === ALL_PROJECTS_ID) currentProject = { id: ALL_PROJECTS_ID, name: "ALL", description: "All projects and work in one view." };
+    else currentProject = { id: event.target.value, name: event.target.selectedOptions[0].textContent };
+    loadProjectData();
+  });
   taskColumns.addEventListener("click", event => { const add = event.target.closest(".add-task"); const note = event.target.closest(".task-note"); if (add) openEditor("task", { status: add.dataset.status }); if (note) openEditor("note", { taskId: note.dataset.taskId }); });
   dialog.querySelector("form").addEventListener("submit", saveEditor);
   dialog.querySelector("[data-close-dialog]").addEventListener("click", () => dialog.close());
