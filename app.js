@@ -53,10 +53,10 @@
     client = window.supabase.createClient(config.url, config.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
-    client.auth.onAuthStateChange((_event, nextSession) => {
+    client.auth.onAuthStateChange((event, nextSession) => {
       session = nextSession;
       if (nextSession) { openApp(); loadProjects(); }
-      else lock();
+      else if (event === "SIGNED_OUT") lock();
     });
     return true;
   }
