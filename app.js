@@ -5,7 +5,7 @@
   const gate = document.querySelector("#gate");
   const app = document.querySelector("#app");
   const authForm = document.querySelector("#auth-form");
-  const authEmail = document.querySelector("#email");
+  const authUsername = document.querySelector("#username");
   const authPassword = document.querySelector("#password");
   const authSubmit = document.querySelector("#auth-submit");
   const authError = document.querySelector("#gate-error");
@@ -34,7 +34,7 @@
   const notify = message => { toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 3000); };
   const showAuthError = message => { authError.textContent = message || ""; };
   const openApp = () => { gate.hidden = true; app.hidden = false; app.style.display = "flex"; };
-  const lock = () => { app.hidden = true; app.style.display = "none"; gate.hidden = false; authEmail.focus(); };
+  const lock = () => { app.hidden = true; app.style.display = "none"; gate.hidden = false; authUsername.focus(); };
   const initials = value => (value || "PM").split(/[.@\s_-]+/).filter(Boolean).map(part => part[0]).join("").slice(0, 2).toUpperCase() || "PM";
   const dateText = value => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00`)) : "No date";
   const timeText = value => value ? new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(Math.round((new Date(value) - new Date()) / 3600000), "hour") : "Just now";
@@ -66,17 +66,22 @@
     const { data, error } = await client.auth.getSession();
     if (error) showAuthError(error.message);
     session = data.session;
-    if (session) { openApp(); await loadProjects(); } else authEmail.focus();
+    if (session) { openApp(); await loadProjects(); } else authUsername.focus();
   }
 
   async function submitAuth(event) {
     event.preventDefault();
     if (!client) return;
-    const email = authEmail.value.trim();
+    const username = authUsername.value.trim();
     const password = authPassword.value;
     authSubmit.disabled = true;
     showAuthError("");
-    const result = await client.auth.signInWithPassword({ email, password });
+    if (username.toLowerCase() !== "cayde-pm") {
+      authSubmit.disabled = false;
+      showAuthError("Invalid username or password.");
+      return;
+    }
+    const result = await client.auth.signInWithPassword({ email: "cayde-pm@pm.w-software.net", password });
     authSubmit.disabled = false;
     if (result.error) { showAuthError(result.error.message); return; }
   }

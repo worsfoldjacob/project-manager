@@ -18,9 +18,11 @@ Run a local static server from this folder:
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`. Sign in with a privately provisioned email-and-password account, then create projects, tasks, milestones, and task notes, and see the activity log. Sessions persist through browser refreshes; logging out returns to the sign-in screen.
+Then visit `http://localhost:8000`. Sign in with the private `Cayde-pm` username and password, then create projects, tasks, milestones, and task notes, and see the activity log. Sessions persist through browser refreshes; logging out returns to the sign-in screen.
 
 ## Private account provisioning
+
+Create one confirmed Supabase Auth user with the internal email `cayde-pm@pm.w-software.net`. The public UI never exposes that email; users sign in with the fixed username `Cayde-pm`. Set the password privately in Supabase and keep public sign-ups disabled.
 
 Public registration is disabled. To create the initial owner account, an owner should use the Supabase project dashboard's **Authentication → Users → Add user** control (or the trusted server-side Admin API with a service-role key kept outside this repository), set the email and password, and complete/confirm the account as required by the project's email-confirmation policy. The account can then sign in through the dashboard.
 

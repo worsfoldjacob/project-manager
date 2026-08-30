@@ -12,7 +12,7 @@
       <form class="gate-card" id="auth-form">
         <div class="mark">C6</div><p class="eyebrow">Private workspace</p><h1 id="gate-title">Cayde-6 Project Manager</h1>
         <p>Sign in to securely access your projects.</p>
-        <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+        <label for="username">Username</label><input id="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
         <label for="password">Password</label><div class="password-row"><input id="password" type="password" autocomplete="current-password" minlength="6" required><button class="icon-button" id="toggle-password" type="button" aria-label="Show password">◉</button></div>
         <p class="gate-error" id="gate-error" role="alert"></p>
         <button class="primary-button" id="auth-submit" type="submit">Continue <span>→</span></button><p class="gate-note">Authentication is provided by Supabase.</p>
