@@ -56,6 +56,7 @@
     client.auth.onAuthStateChange((event, nextSession) => {
       session = nextSession;
       if (nextSession) { openApp(); loadProjects(); }
+      else if (event === "SIGNED_OUT") lock();
     });
     return true;
   }
@@ -212,7 +213,15 @@
 
   authForm.addEventListener("submit", submitAuth);
   document.querySelector("#toggle-password").addEventListener("click", () => { const visible = authPassword.type === "text"; authPassword.type = visible ? "password" : "text"; });
-  document.querySelector("#logout-button").addEventListener("click", async () => { if (client) await client.auth.signOut(); session = null; lock(); });
+  document.querySelector("#logout-button").addEventListener("click", async () => {
+    if (!client) return;
+    const { error } = await client.auth.signOut();
+    if (error) { notify(`Could not log out: ${error.message}`); return; }
+    session = null;
+    authPassword.value = "";
+    showAuthError("");
+    lock();
+  });
   document.querySelector("#menu-button").addEventListener("click", () => app.classList.toggle("nav-open"));
   document.querySelectorAll(".sidebar nav a").forEach(link => link.addEventListener("click", () => app.classList.remove("nav-open")));
   document.querySelector("#new-task").addEventListener("click", () => currentProject ? openEditor("task") : openEditor("project"));
