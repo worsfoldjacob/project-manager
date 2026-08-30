@@ -1,5 +1,5 @@
 (() => {
-  const demoPassword = "cayde-demo"; // Public demo value only; this is not an authentication system.
+  const demoPasswords = new Set(["cayde-demo", "stride-demo"]); // Public demo values only; this is not an authentication system.
   const gate = document.querySelector("#gate");
   const app = document.querySelector("#app");
   const error = document.querySelector("#gate-error");
@@ -23,7 +23,7 @@
 
   document.querySelector("#gate-form").addEventListener("submit", event => {
     event.preventDefault();
-    if (password.value.trim() === demoPassword) { error.textContent = ""; openApp(); saveSession("open"); }
+    if (demoPasswords.has(password.value.trim())) { error.textContent = ""; openApp(); saveSession("open"); }
     else { error.textContent = "That demo password did not match."; password.select(); }
   });
   const togglePassword = document.querySelector("#toggle-password");
