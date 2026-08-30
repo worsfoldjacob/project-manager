@@ -1,5 +1,5 @@
 (() => {
-  const demoPassword = "stride-demo"; // Public demo value only; this is not an authentication system.
+  const demoPassword = "cayde-demo"; // Public demo value only; this is not an authentication system.
   const gate = document.querySelector("#gate");
   const app = document.querySelector("#app");
   const error = document.querySelector("#gate-error");
@@ -8,13 +8,13 @@
   let toastTimer;
 
   const saveSession = value => {
-    try { sessionStorage.setItem("market-strider-demo", value); } catch { /* Storage is optional. */ }
+    try { sessionStorage.setItem("cayde-project-manager-demo", value); } catch { /* Storage is optional. */ }
   };
   const clearSession = () => {
-    try { sessionStorage.removeItem("market-strider-demo"); } catch { /* Storage is optional. */ }
+    try { sessionStorage.removeItem("cayde-project-manager-demo"); } catch { /* Storage is optional. */ }
   };
   const hasSession = () => {
-    try { return sessionStorage.getItem("market-strider-demo") === "open"; } catch { return false; }
+    try { return sessionStorage.getItem("cayde-project-manager-demo") === "open"; } catch { return false; }
   };
 
   const openApp = () => { gate.hidden = true; app.hidden = false; password.value = ""; };
@@ -38,7 +38,7 @@
   document.querySelectorAll(".sidebar nav a").forEach(link => link.addEventListener("click", () => app.classList.remove("nav-open")));
   document.querySelector("#new-task").addEventListener("click", () => notify("Demo mode: task creation is ready to connect."));
   document.querySelector(".share-button").addEventListener("click", async () => {
-    const shareText = "Market Strider Leaderboard is 68% complete — momentum is building.";
+    const shareText = "Website refresh is 68% complete — the launch is on track.";
     try {
       await navigator.clipboard.writeText(shareText);
       notify("Project update copied to your clipboard.");

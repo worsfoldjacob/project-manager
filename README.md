@@ -1,10 +1,10 @@
-# Market Strider Project Manager
+# Cayde-6 Project Manager
 
-A responsive, static GitHub Pages-ready example dashboard for the Market Strider Leaderboard project. It uses plain HTML, CSS, and JavaScript—no build step, dependencies, API calls, or external data sources.
+A responsive, static GitHub Pages-ready project-management dashboard. It includes generic example projects and tasks, and uses plain HTML, CSS, and JavaScript—no build step, dependencies, API calls, or external data sources.
 
 ## Local preview
 
-Open `index.html` directly in a modern browser, or run a simple local static server from this folder, for example:
+Open `index.html` directly in a modern browser, or run a simple local static server from this folder:
 
 ```powershell
 python -m http.server 8000
@@ -12,7 +12,7 @@ python -m http.server 8000
 
 Then visit `http://localhost:8000`.
 
-The demo password is `stride-demo`. It is deliberately public and stored in the client-side JavaScript solely to demonstrate the app-password interaction. It is **not** authentication and must not be used to protect real content or secrets.
+The demo password is `cayde-demo`. It is deliberately public and stored in the client-side JavaScript solely to demonstrate the app-password interaction. It is **not** authentication and must not be used to protect real content or secrets.
 
 ## GitHub Pages deployment
 
