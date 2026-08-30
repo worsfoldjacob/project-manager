@@ -23,7 +23,7 @@
 
   document.querySelector("#gate-form").addEventListener("submit", event => {
     event.preventDefault();
-    if (password.value === demoPassword) { error.textContent = ""; openApp(); saveSession("open"); }
+    if (password.value.trim() === demoPassword) { error.textContent = ""; openApp(); saveSession("open"); }
     else { error.textContent = "That demo password did not match."; password.select(); }
   });
   const togglePassword = document.querySelector("#toggle-password");
