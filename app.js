@@ -81,9 +81,14 @@
       showAuthError("Invalid username or password.");
       return;
     }
-    const result = await client.auth.signInWithPassword({ email: "cayde-pm@pm.w-software.net", password });
-    authSubmit.disabled = false;
-    if (result.error) { showAuthError(result.error.message); return; }
+    try {
+      const result = await client.auth.signInWithPassword({ email: "cayde-pm@pm.w-software.net", password });
+      if (result.error) { showAuthError(result.error.message); return; }
+    } catch (error) {
+      showAuthError(`Could not reach the authentication service. ${error?.message || "Please try again."}`);
+    } finally {
+      authSubmit.disabled = false;
+    }
   }
 
   async function loadProjects() {
