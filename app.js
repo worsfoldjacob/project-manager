@@ -90,6 +90,9 @@
         new Promise(resolve => setTimeout(() => resolve({ error: new Error("Authentication request timed out. Check your connection and try again.") }), 10000))
       ]);
       if (result.error) { showAuthError(result.error.message); return; }
+      session = result.data.session;
+      openApp();
+      await loadProjects();
     } catch (error) {
       showAuthError(`Could not reach the authentication service. ${error?.message || "Please try again."}`);
     } finally {
