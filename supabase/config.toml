@@ -1,0 +1,18 @@
+project_id = "zhgwhsrhrfsjdupikobo"
+
+[api]
+enabled = true
+
+[db]
+major_version = 17
+
+[studio]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "https://pm.w-software.net"
+additional_redirect_urls = ["http://localhost:8000", "http://127.0.0.1:8000"]
+
+[storage]
+enabled = true
