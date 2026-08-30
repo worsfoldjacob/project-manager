@@ -75,19 +75,26 @@
     const username = authUsername.value.trim();
     const password = authPassword.value;
     authSubmit.disabled = true;
+    authSubmit.dataset.label = authSubmit.innerHTML;
+    authSubmit.innerHTML = "Signing in…";
     showAuthError("");
     if (username.toLowerCase() !== "cayde-pm") {
       authSubmit.disabled = false;
+      authSubmit.innerHTML = authSubmit.dataset.label;
       showAuthError("Invalid username or password.");
       return;
     }
     try {
-      const result = await client.auth.signInWithPassword({ email: "cayde-pm@pm.w-software.net", password });
+      const result = await Promise.race([
+        client.auth.signInWithPassword({ email: "cayde-pm@pm.w-software.net", password }),
+        new Promise(resolve => setTimeout(() => resolve({ error: new Error("Authentication request timed out. Check your connection and try again.") }), 10000))
+      ]);
       if (result.error) { showAuthError(result.error.message); return; }
     } catch (error) {
       showAuthError(`Could not reach the authentication service. ${error?.message || "Please try again."}`);
     } finally {
       authSubmit.disabled = false;
+      authSubmit.innerHTML = authSubmit.dataset.label;
     }
   }
 
