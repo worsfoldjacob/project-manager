@@ -42,7 +42,7 @@
 
   function setupClient() {
     if (!config.url || !config.anonKey || /replace-with|your-/i.test(config.anonKey)) {
-      showAuthError("This site needs a Supabase publishable key in config.js before it can sign in.");
+      showAuthError("This workspace is not configured for sign-in. Contact the workspace owner.");
       authSubmit.disabled = true;
       return false;
     }

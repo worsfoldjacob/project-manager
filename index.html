@@ -5,29 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Cayde-6 Project Manager dashboard">
     <title>Cayde-6 Project Manager</title>
-    <link rel="stylesheet" href="styles.css?v=17">
+    <link rel="stylesheet" href="styles.css?v=18">
   </head>
   <body>
     <div class="gate" id="gate" aria-modal="true" role="dialog" aria-labelledby="gate-title">
       <form class="gate-card" id="auth-form">
-        <div class="mark">C6</div><p class="eyebrow">Private workspace</p><h1 id="gate-title">Cayde-6 Project Manager</h1>
-        <p>Sign in to securely access your projects.</p>
+        <div class="mark">C6</div><p class="eyebrow">Private workspace</p><h1 id="gate-title">Command your work.</h1>
+        <p>Sign in to access your Cayde-6 project workspace.</p>
         <label for="username">Username</label><input id="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
         <label for="password">Password</label><div class="password-row"><input id="password" type="password" autocomplete="current-password" minlength="6" required><button class="icon-button" id="toggle-password" type="button" aria-label="Show password">◉</button></div>
         <p class="gate-error" id="gate-error" role="alert"></p>
-        <button class="primary-button" id="auth-submit" type="submit">Continue <span>→</span></button><p class="gate-note">Authentication is provided by Supabase.</p>
+        <button class="primary-button" id="auth-submit" type="submit">Enter workspace <span>→</span></button><p class="gate-note">Your workspace is protected and private.</p>
       </form>
     </div>
     <div class="app-shell" id="app" hidden>
-      <aside class="sidebar"><a class="brand" href="#top"><span class="brand-mark">C6</span><span>cayde-6<br>project manager</span></a><nav aria-label="Project navigation"><a class="active" href="#overview"><span>◈</span> Overview</a><a href="#board"><span>▦</span> Task board <b id="task-count">0</b></a><a href="#milestones"><span>◯</span> Milestones</a><a href="#activity"><span>◌</span> Activity</a></nav><div class="sidebar-bottom"><button id="new-project" class="lock-button" type="button">+ New project</button><button id="logout-button" class="lock-button" type="button">⇥ &nbsp; Log out</button></div></aside>
-      <main id="top"><header class="topbar"><button class="menu-button" id="menu-button" type="button" aria-label="Toggle navigation">☰</button><div class="crumb"><span>Projects</span><i>/</i><select id="project-select" aria-label="Current project"></select></div><div class="top-actions"><div class="avatar" id="user-avatar">PM</div></div></header>
+      <aside class="sidebar"><a class="brand" href="#top"><span class="brand-mark">C6</span><span><small>Cayde-6</small>Project Manager</span></a><p class="workspace-label">Workspace</p><nav aria-label="Project navigation"><a class="active" href="#overview"><span>◈</span> Overview</a><a href="#board"><span>▦</span> Task board <b id="task-count">0</b></a><a href="#milestones"><span>◯</span> Milestones</a><a href="#activity"><span>◌</span> Activity</a></nav><div class="sidebar-bottom"><div class="sidebar-status"><span class="live-dot"></span><span>Workspace online</span></div><button id="new-project" class="lock-button" type="button">+ New project</button><button id="logout-button" class="lock-button" type="button">⇥ &nbsp; Log out</button></div></aside>
+      <main id="top"><header class="topbar"><button class="menu-button" id="menu-button" type="button" aria-label="Toggle navigation">☰</button><div class="crumb"><span>Projects</span><i>/</i><select id="project-select" aria-label="Current project"></select></div><div class="top-actions"><span class="top-status"><i></i> Private workspace</span><div class="avatar" id="user-avatar">PM</div></div></header>
         <div class="dashboard-content"><section class="project-head" id="overview"><div><p class="eyebrow">Active project <span class="live-dot"></span> On track</p><h1 id="project-name">Your projects</h1><p class="lede" id="project-description">Sign in to load your workspace.</p></div><div class="head-actions"><button class="share-button" id="new-milestone" type="button">+ Milestone</button><button class="primary-button compact" type="button" id="new-task">+ New task</button></div></section>
-          <section class="section-head" id="board"><div><p class="eyebrow">Current sprint</p><h2>Preparing the <em>launch.</em></h2></div></section><section class="kanban" id="task-columns" aria-label="Current sprint task board"></section>
-          <section class="lower-grid"><article class="milestones" id="milestones"><div class="section-title"><div><p class="eyebrow">Delivery plan</p><h2>Milestones</h2></div></div><ol id="milestone-list"></ol></article><article class="activity" id="activity"><div class="section-title"><div><p class="eyebrow">Live feed</p><h2>Notes &amp; activity</h2></div></div><div id="activity-list"></div><div id="notes-list"></div></article></section><footer class="page-footer"><span>CAYDE-6 PROJECT MANAGER</span><span>Synced with Supabase</span></footer>
+          <section class="section-head" id="board"><div><p class="eyebrow">Current sprint</p><h2>Work in <em>motion.</em></h2></div><p class="section-copy">Move the important work forward, one clear next step at a time.</p></section><section class="kanban" id="task-columns" aria-label="Current sprint task board"></section>
+          <section class="lower-grid"><article class="milestones" id="milestones"><div class="section-title"><div><p class="eyebrow">Delivery plan</p><h2>Milestones</h2></div></div><ol id="milestone-list"></ol></article><article class="activity" id="activity"><div class="section-title"><div><p class="eyebrow">Live feed</p><h2>Notes &amp; activity</h2></div></div><div id="activity-list"></div><div id="notes-list"></div></article></section><footer class="page-footer"><span>CAYDE-6 PROJECT MANAGER</span><span>Private project workspace</span></footer>
         </div></main>
     </div>
     <dialog id="editor-dialog" class="editor-dialog"><form method="dialog"><div class="section-title"><h2 id="editor-title">New item</h2><button type="button" data-close-dialog aria-label="Close">×</button></div><div id="editor-fields"></div><button class="primary-button" type="submit">Save</button></form></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="config.js?v=17"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=17"></script>
+    <script src="config.js?v=17"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js?v=18"></script>
   </body>
 </html>
