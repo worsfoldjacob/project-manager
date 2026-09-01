@@ -55,9 +55,13 @@
   const dateText = value => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00`)) : "No date";
   const timeText = value => value ? new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(Math.round((new Date(value) - new Date()) / 3600000), "hour") : "Just now";
   const slugify = value => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `project-${Date.now()}`;
+  const normalizeTaskStatus = status => {
+    const normalized = String(status ?? "TODO").toUpperCase();
+    return normalized === "COMPLETE" ? "DONE" : normalized;
+  };
   const taskStatus = task => {
-    if (task.source_status) return String(task.source_status).toUpperCase();
-    return ({ backlog: "TODO", up_next: "TODO", in_progress: "IN PROGRESS", in_review: "WAITING FOR HUMAN", done: "DONE" })[task.status] || String(task.status || "TODO").toUpperCase();
+    if (task.source_status) return normalizeTaskStatus(task.source_status);
+    return normalizeTaskStatus(({ backlog: "TODO", up_next: "TODO", in_progress: "IN PROGRESS", in_review: "WAITING FOR HUMAN", done: "DONE" })[task.status] || task.status || "TODO");
   };
   const taskTimestamp = task => task.source_updated_at || task.updated_at || task.created_at;
   const statusSection = task => statusSectionMap[taskStatus(task)] || statusSectionMap[task.status] || "up_next";
@@ -74,7 +78,7 @@
     return start;
   };
   const matchesDateFilter = (item, filter = dateFilter?.value || "all") => {
-    const status = String(item?.source_status || item?.status || "").toUpperCase();
+    const status = taskStatus(item);
     if (status !== "DONE") return true;
     const start = dateFilterStart(filter);
     return !start || (item && taskTimestamp(item) && new Date(taskTimestamp(item)) >= start);

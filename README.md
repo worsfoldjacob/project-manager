@@ -63,4 +63,5 @@ Set `PROJECT_MANAGER_SYNC_ENDPOINT` to `https://zhgwhsrhrfsjdupikobo.supabase.co
 - `index.html` — accessible dashboard and editor markup
 - `app.js` — Supabase browser authentication and RLS-backed persistence
 - `config.js` — public browser Supabase configuration
+- `assets/cayde-6-dashboard.jpg` — current Cayde-6 dashboard branding image used for the favicon, sign-in mark, and sidebar brand
 - `supabase/migrations/` — schema and RLS policies

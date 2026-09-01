@@ -20,6 +20,7 @@ const statusMap: Record<string, string> = {
   STALLED: "in_review",
   BLOCKED: "in_review",
   DONE: "done",
+  COMPLETE: "done",
 };
 
 const priorityMap: Record<string, string> = {
@@ -77,7 +78,8 @@ Deno.serve(async (request) => {
     const sourceTaskId = String(task.id ?? "").trim();
     const projectName = String(task.project ?? "Unassigned").trim() || "Unassigned";
     if (!sourceTaskId || !String(task.title ?? "").trim()) continue;
-    const sourceStatus = text(task.status).toUpperCase() || "TODO";
+    const rawSourceStatus = text(task.status).toUpperCase() || "TODO";
+    const sourceStatus = rawSourceStatus === "COMPLETE" ? "DONE" : rawSourceStatus;
     const sourceUpdatedAt = isoOrNull(task.lastUpdate || task.updatedAt || task.lastActivityAt || task.createdAt);
     const sourceCreatedAt = isoOrNull(task.createdAt);
     const sourceDescription = text(task.description);
