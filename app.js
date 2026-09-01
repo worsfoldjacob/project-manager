@@ -74,6 +74,8 @@
     return start;
   };
   const matchesDateFilter = (item, filter = dateFilter?.value || "all") => {
+    const status = String(item?.source_status || item?.status || "").toUpperCase();
+    if (status !== "DONE") return true;
     const start = dateFilterStart(filter);
     return !start || (item && taskTimestamp(item) && new Date(taskTimestamp(item)) >= start);
   };
