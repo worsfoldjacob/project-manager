@@ -19,18 +19,33 @@
   const projectName = document.querySelector("#project-name");
   const projectDescription = document.querySelector("#project-description");
   const userAvatar = document.querySelector("#user-avatar");
+  const dateFilter = document.querySelector("#date-filter");
+  const syncStatus = document.querySelector("#sync-status");
+  const detailsDialog = document.querySelector("#task-details-dialog");
+  const detailsTitle = document.querySelector("#task-details-title");
+  const detailsContent = document.querySelector("#task-details-content");
+  const detailsAddNote = document.querySelector("#task-details-add-note");
   const dialog = document.querySelector("#editor-dialog");
   const dialogTitle = document.querySelector("#editor-title");
   const dialogFields = document.querySelector("#editor-fields");
   let client;
   let session;
   let currentProject;
+  let currentTasks = [];
+  let currentActivity = [];
+  let refreshTimer;
   let toastTimer;
   const ALL_PROJECTS_ID = "__all__";
 
   const columns = [
     ["up_next", "Up next"], ["in_progress", "In progress"], ["in_review", "In review"], ["done", "Done"]
   ];
+  const statusSectionMap = {
+    TODO: "up_next", QUEUED: "up_next", "IN PROGRESS": "in_progress",
+    "WAITING FOR HUMAN": "in_review", STALLED: "in_review", BLOCKED: "in_review", DONE: "done",
+    backlog: "up_next", up_next: "up_next", in_progress: "in_progress", in_review: "in_review", done: "done"
+  };
+  const statusLabels = { TODO: "TODO", QUEUED: "QUEUED", "IN PROGRESS": "IN PROGRESS", "WAITING FOR HUMAN": "WAITING FOR HUMAN", STALLED: "STALLED", BLOCKED: "BLOCKED", DONE: "DONE" };
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
   const notify = message => { toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 3000); };
   const showAuthError = message => { authError.textContent = message || ""; };
@@ -40,6 +55,28 @@
   const dateText = value => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00`)) : "No date";
   const timeText = value => value ? new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(Math.round((new Date(value) - new Date()) / 3600000), "hour") : "Just now";
   const slugify = value => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `project-${Date.now()}`;
+  const taskStatus = task => {
+    if (task.source_status) return String(task.source_status).toUpperCase();
+    return ({ backlog: "TODO", up_next: "TODO", in_progress: "IN PROGRESS", in_review: "WAITING FOR HUMAN", done: "DONE" })[task.status] || String(task.status || "TODO").toUpperCase();
+  };
+  const taskTimestamp = task => task.source_updated_at || task.updated_at || task.created_at;
+  const statusSection = task => statusSectionMap[taskStatus(task)] || statusSectionMap[task.status] || "up_next";
+  const statusClass = status => `status-${String(status).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const dateFilterStart = filter => {
+    if (filter === "all") return null;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (filter === "week") {
+      const day = start.getDay();
+      start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+    } else if (filter === "month") start.setDate(1);
+    else if (filter === "year") { start.setMonth(0); start.setDate(1); }
+    return start;
+  };
+  const matchesDateFilter = (item, filter = dateFilter?.value || "all") => {
+    const start = dateFilterStart(filter);
+    return !start || (item && taskTimestamp(item) && new Date(taskTimestamp(item)) >= start);
+  };
 
   function setupClient() {
     if (!config.url || !config.anonKey || /replace-with|your-/i.test(config.anonKey)) {
@@ -56,8 +93,15 @@
     });
     client.auth.onAuthStateChange((event, nextSession) => {
       session = nextSession;
-      if (nextSession) { openApp(); loadProjects(); }
-      else if (event === "SIGNED_OUT") lock();
+      if (nextSession) {
+        openApp();
+        loadProjects();
+        clearInterval(refreshTimer);
+        refreshTimer = setInterval(() => loadProjectData(true), 30000);
+      } else if (event === "SIGNED_OUT") {
+        clearInterval(refreshTimer);
+        lock();
+      }
     });
     return true;
   }
@@ -122,7 +166,7 @@
     await loadProjectData();
   }
 
-  async function loadProjectData() {
+  async function loadProjectData(silent = false) {
     if (!currentProject) return renderEmpty();
     const allProjects = currentProject.id === ALL_PROJECTS_ID;
     projectName.textContent = currentProject.name;
@@ -134,11 +178,14 @@
       allProjects ? client.from("activity_events").select("*").order("created_at", { ascending: false }).limit(12) : client.from("activity_events").select("*").eq("project_id", currentProject.id).order("created_at", { ascending: false }).limit(12)
     ]);
     const failure = [tasksResult, milestonesResult, activityResult].find(result => result.error);
-    if (failure) { notify(`Could not load workspace: ${failure.error.message}`); return; }
-    renderTasks(tasksResult.data);
+    if (failure) { if (!silent) notify(`Could not load workspace: ${failure.error.message}`); return; }
+    currentTasks = tasksResult.data || [];
+    currentActivity = activityResult.data || [];
+    if (syncStatus) syncStatus.textContent = `Last synced ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    renderTasksV2(currentTasks);
     renderMilestones(milestonesResult.data);
-    renderActivity(activityResult.data);
-    await loadNotes(tasksResult.data);
+    renderActivityV2(currentActivity);
+    await loadNotes(currentTasks.filter(task => matchesDateFilter(task)));
   }
 
   function renderEmpty() {
@@ -149,6 +196,7 @@
     activity.innerHTML = '<p class="empty-state">No activity yet.</p>';
     notes.innerHTML = "";
     taskCount.textContent = "0";
+    if (syncStatus) syncStatus.textContent = "Waiting for data";
   }
 
   function renderTasks(tasks) {
@@ -163,8 +211,38 @@
     milestones.innerHTML = items.map((item, index) => `<li class="${item.due_date && new Date(`${item.due_date}T23:59:59`) < new Date() ? "completed" : index === 0 ? "current" : ""}"><span>${index + 1}</span><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || dateText(item.due_date))}</small></div><b>${dateText(item.due_date)}</b></li>`).join("") || '<li class="empty-state">No milestones yet.</li>';
   }
 
+  function renderTasksV2(tasks) {
+    const visibleTasks = tasks.filter(task => matchesDateFilter(task));
+    taskCount.textContent = String(visibleTasks.length);
+    taskColumns.innerHTML = columns.map(([section, label]) => {
+      const items = visibleTasks.filter(task => statusSection(task) === section);
+      return `<div class="board-column"><div class="column-title"><h3>${label} <span>${items.length}</span></h3><button type="button" class="add-task" data-status="${section}" aria-label="Add ${label} task">+</button></div>${items.map(task => {
+        const rawStatus = taskStatus(task);
+        const lead = task.source_lead || task.assignee || "Unassigned";
+        const completionPercent = task.source_completion_percent ?? (rawStatus === "DONE" ? 100 : null);
+        return `<article class="task-card" data-task-id="${escapeHtml(task.id)}"><div class="task-card-top"><span class="status-pill ${statusClass(rawStatus)}">${escapeHtml(statusLabels[rawStatus] || rawStatus)}</span><button class="dots task-details" type="button" data-task-id="${escapeHtml(task.id)}" aria-label="Show task details">...</button></div><h4>${escapeHtml(task.title)}</h4><dl class="work-update-fields"><div><dt>Lead</dt><dd>${escapeHtml(lead)}</dd></div><div><dt>Stage</dt><dd>${escapeHtml(task.source_stage || "Not set")}</dd></div>${completionPercent !== null ? `<div><dt>Task est completion</dt><dd>${escapeHtml(completionPercent)}%</dd></div>` : ""}</dl>${completionPercent !== null ? `<div class="task-progress" aria-label="${escapeHtml(completionPercent)} percent complete"><span style="width:${Math.max(0, Math.min(100, Number(completionPercent) || 0))}%"></span></div>` : ""}<footer><span class="mini-avatar a1">${escapeHtml(initials(lead))}</span><span>${dateText(task.due_date)}</span><b>${escapeHtml(task.assignee || "Unassigned")}</b></footer></article>`;
+      }).join("") || '<p class="empty-state">Nothing here.</p>'}</div>`;
+    }).join("");
+  }
+
   function renderActivity(items) {
     activity.innerHTML = items.map(item => `<div class="activity-item"><span class="mini-avatar a2">${escapeHtml(initials(session?.user?.email))}</span><p>${escapeHtml(item.message)}<small>${timeText(item.created_at)}</small></p></div>`).join("") || '<p class="empty-state">No activity yet.</p>';
+  }
+
+  function renderActivityV2(items) {
+    const visibleItems = items.filter(item => matchesDateFilter({ source_updated_at: item.created_at }));
+    activity.innerHTML = visibleItems.map(item => `<div class="activity-item"><span class="mini-avatar a2">${escapeHtml(initials(session?.user?.email))}</span><p>${escapeHtml(item.message)}<small>${timeText(item.created_at)}</small></p></div>`).join("") || '<p class="empty-state">No activity yet.</p>';
+  }
+
+  const listText = value => Array.isArray(value) && value.length ? value.join(", ") : "Not recorded";
+  function openTaskDetails(taskId) {
+    const task = currentTasks.find(item => item.id === taskId);
+    if (!task || !detailsDialog) return;
+    const rawStatus = taskStatus(task);
+    detailsTitle.textContent = task.title;
+    detailsContent.innerHTML = `<div class="details-status"><span class="status-pill ${statusClass(rawStatus)}">${escapeHtml(statusLabels[rawStatus] || rawStatus)}</span><span>${escapeHtml(columns.find(([key]) => key === statusSection(task))?.[1] || "Up next")}</span></div><dl class="details-grid"><div><dt>Lead</dt><dd>${escapeHtml(task.source_lead || task.assignee || "Unassigned")}</dd></div><div><dt>Stage</dt><dd>${escapeHtml(task.source_stage || "Not set")}</dd></div><div><dt>Task est completion</dt><dd>${escapeHtml(task.source_completion_percent ?? (rawStatus === "DONE" ? 100 : "Not set"))}${task.source_completion_percent !== null && task.source_completion_percent !== undefined || rawStatus === "DONE" ? "%" : ""}</dd></div><div><dt>Priority</dt><dd>${escapeHtml(task.priority || "Not set")}</dd></div><div><dt>Scope / team</dt><dd>${escapeHtml([task.source_scope, task.source_team].filter(Boolean).join(" / ") || "Not recorded")}</dd></div><div><dt>Due</dt><dd>${escapeHtml(dateText(task.due_date))}</dd></div></dl><div class="details-copy"><h3>Description</h3><p>${escapeHtml(task.description || "No description recorded.")}</p></div><dl class="details-list"><div><dt>Blocker</dt><dd>${escapeHtml(task.source_blocker || "None")}</dd></div><div><dt>Waiting for</dt><dd>${escapeHtml(task.source_waiting_for || "None")}</dd></div><div><dt>Active specialists</dt><dd>${escapeHtml(listText(task.source_active_specialists))}</dd></div><div><dt>Completed stages</dt><dd>${escapeHtml(listText(task.source_completed_stages))}</dd></div><div><dt>Reference</dt><dd>${escapeHtml(task.source_reference || "None")}</dd></div><div><dt>Last work update</dt><dd>${escapeHtml(taskTimestamp(task) ? new Date(taskTimestamp(task)).toLocaleString() : "Not recorded")}</dd></div></dl>`;
+    detailsAddNote.dataset.taskId = taskId;
+    detailsDialog.showModal();
   }
 
   async function loadNotes(tasks) {
@@ -230,13 +308,16 @@
   document.querySelector("#new-task").addEventListener("click", () => currentProject && currentProject.id !== ALL_PROJECTS_ID ? openEditor("task") : notify("Select a project before creating a task."));
   document.querySelector("#new-project").addEventListener("click", () => openEditor("project"));
   document.querySelector("#new-milestone").addEventListener("click", () => currentProject && currentProject.id !== ALL_PROJECTS_ID ? openEditor("milestone") : notify("Select a project before creating a milestone."));
+  dateFilter?.addEventListener("change", () => { renderTasksV2(currentTasks); renderActivityV2(currentActivity); loadNotes(currentTasks.filter(task => matchesDateFilter(task))); });
   projectSelect.addEventListener("change", event => {
     if (event.target.value === ALL_PROJECTS_ID) currentProject = { id: ALL_PROJECTS_ID, name: "ALL", description: "All projects and work in one view." };
     else currentProject = { id: event.target.value, name: event.target.selectedOptions[0].textContent };
     loadProjectData();
   });
-  taskColumns.addEventListener("click", event => { const add = event.target.closest(".add-task"); const note = event.target.closest(".task-note"); if (add) openEditor("task", { status: add.dataset.status }); if (note) openEditor("note", { taskId: note.dataset.taskId }); });
+  taskColumns.addEventListener("click", event => { const add = event.target.closest(".add-task"); const details = event.target.closest(".task-details"); if (add) openEditor("task", { status: add.dataset.status }); if (details) openTaskDetails(details.dataset.taskId); });
   dialog.querySelector("form").addEventListener("submit", saveEditor);
   dialog.querySelector("[data-close-dialog]").addEventListener("click", () => dialog.close());
+  detailsDialog?.querySelector("[data-close-details]")?.addEventListener("click", () => detailsDialog.close());
+  detailsAddNote?.addEventListener("click", () => { const taskId = detailsAddNote.dataset.taskId; detailsDialog.close(); openEditor("note", { taskId }); });
   if (setupClient()) restoreSession();
 })();
