@@ -34,7 +34,7 @@ Push the branch and configure GitHub Pages to deploy from the repository root. `
 
 The optional `pm-sync` Edge Function accepts authenticated, idempotent task snapshots from the local OpenClaw Project Manager store. It requires the Supabase secrets `PM_SYNC_TOKEN` and `PM_OWNER_USER_ID`; the service-role key is supplied by Supabase to the function runtime and is never committed here.
 
-Each emitted work-update now triggers a dashboard snapshot sync from the local progress monitor. The browser refreshes the signed-in board every 30 seconds as a fallback, and cards use the same work-update fields: Task, Status, Lead, Stage, and Task est completion. Discord work-updates use bold field labels and colored status markers; approval buttons use native green Approve and red Reject styles. Description, blockers, waiting state, specialists, completed stages, references, and timestamps are available from the card's `...` menu. The date view filters only `DONE` tasks by their latest source work-update timestamp; all other statuses are treated as active today and remain visible in every view.
+Each emitted work-update now triggers a dashboard snapshot sync from the local progress monitor. The browser refreshes the signed-in board every 30 seconds as a fallback, and cards use the same work-update fields: Task, Status, Lead, Stage, and Task est completion. Discord work-updates use bold field labels and colored status markers; approval buttons use native green Approve and red Reject styles. Description, blockers, waiting state, specialists, completed stages, references, and timestamps are available from the card's `...` menu. The date view filters terminal `DONE` and `DONE - ABANDONED` tasks by their latest source work-update timestamp; all other statuses are treated as active today and remain visible in every view. Both terminal statuses fall back to `100%` completion when the source percentage is absent.
 
 Work-updates use the same Discord presentation box as approval requests. The main body contains Task, Lead, Stage, and Task est completion; the colored Status is rendered as a non-interactive context line at the bottom of the box.
 
@@ -43,7 +43,7 @@ Dashboard sections map statuses as follows:
 - Up next: `TODO`, `QUEUED`
 - In progress: `IN PROGRESS`
 - In review: `WAITING FOR HUMAN`, `STALLED`, `BLOCKED`
-- Done: `DONE`
+- Done: `DONE`, `DONE - ABANDONED` (displayed distinctly as `ABANDONED`)
 
 Work-update status markers are: `TODO` 🔵, `QUEUED` 🟦, `IN PROGRESS` 🟡, `WAITING FOR HUMAN` 🟠, `STALLED` 🟣, `BLOCKED` 🔴, and `DONE` 🟢.
 
@@ -57,6 +57,7 @@ supabase functions deploy pm-sync --no-verify-jwt
 ```
 
 Set `PROJECT_MANAGER_SYNC_ENDPOINT` to `https://zhgwhsrhrfsjdupikobo.supabase.co/functions/v1/pm-sync` and `PROJECT_MANAGER_SYNC_TOKEN` in the private environment that runs `scripts/sync-local-project-manager.ps1`.
+Set `CAYDE_PM_TASKS_PATH` to the active deterministic Project Manager's `tasks.jsonl`, or set `CAYDE_STATE_ROOT` so the script can resolve `project-manager/tasks.jsonl`. The script accepts both the current append-only task-event journal and the earlier direct-snapshot format; it has no machine- or username-specific default path.
 
 ## Files
 

@@ -42,10 +42,10 @@
   ];
   const statusSectionMap = {
     TODO: "up_next", QUEUED: "up_next", "IN PROGRESS": "in_progress",
-    "WAITING FOR HUMAN": "in_review", STALLED: "in_review", BLOCKED: "in_review", DONE: "done",
+    "WAITING FOR HUMAN": "in_review", STALLED: "in_review", BLOCKED: "in_review", DONE: "done", "DONE - ABANDONED": "done",
     backlog: "up_next", up_next: "up_next", in_progress: "in_progress", in_review: "in_review", done: "done"
   };
-  const statusLabels = { TODO: "TODO", QUEUED: "QUEUED", "IN PROGRESS": "IN PROGRESS", "WAITING FOR HUMAN": "WAITING FOR HUMAN", STALLED: "STALLED", BLOCKED: "BLOCKED", DONE: "DONE" };
+  const statusLabels = { TODO: "TODO", QUEUED: "QUEUED", "IN PROGRESS": "IN PROGRESS", "WAITING FOR HUMAN": "WAITING FOR HUMAN", STALLED: "STALLED", BLOCKED: "BLOCKED", DONE: "DONE", "DONE - ABANDONED": "ABANDONED" };
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
   const notify = message => { toast.textContent = message; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"), 3000); };
   const showAuthError = message => { authError.textContent = message || ""; };
@@ -79,7 +79,7 @@
   };
   const matchesDateFilter = (item, filter = dateFilter?.value || "all") => {
     const status = taskStatus(item);
-    if (status !== "DONE") return true;
+    if (status !== "DONE" && status !== "DONE - ABANDONED") return true;
     const start = dateFilterStart(filter);
     return !start || (item && taskTimestamp(item) && new Date(taskTimestamp(item)) >= start);
   };
@@ -225,7 +225,7 @@
       return `<div class="board-column"><div class="column-title"><h3>${label} <span>${items.length}</span></h3><button type="button" class="add-task" data-status="${section}" aria-label="Add ${label} task">+</button></div>${items.map(task => {
         const rawStatus = taskStatus(task);
         const lead = task.source_lead || task.assignee || "Unassigned";
-        const completionPercent = task.source_completion_percent ?? (rawStatus === "DONE" ? 100 : null);
+        const completionPercent = task.source_completion_percent ?? (["DONE", "DONE - ABANDONED"].includes(rawStatus) ? 100 : null);
         return `<article class="task-card" data-task-id="${escapeHtml(task.id)}"><div class="task-card-top"><span class="status-pill ${statusClass(rawStatus)}">${escapeHtml(statusLabels[rawStatus] || rawStatus)}</span><button class="dots task-details" type="button" data-task-id="${escapeHtml(task.id)}" aria-label="Show task details">...</button></div><h4>${escapeHtml(task.title)}</h4><dl class="work-update-fields"><div><dt>Lead</dt><dd>${escapeHtml(lead)}</dd></div><div><dt>Stage</dt><dd>${escapeHtml(task.source_stage || "Not set")}</dd></div>${completionPercent !== null ? `<div><dt>Task est completion</dt><dd>${escapeHtml(completionPercent)}%</dd></div>` : ""}</dl>${completionPercent !== null ? `<div class="task-progress" aria-label="${escapeHtml(completionPercent)} percent complete"><span style="width:${Math.max(0, Math.min(100, Number(completionPercent) || 0))}%"></span></div>` : ""}<footer><span class="mini-avatar a1">${escapeHtml(initials(lead))}</span><span>${dateText(task.due_date)}</span><b>${escapeHtml(task.assignee || "Unassigned")}</b></footer></article>`;
       }).join("") || '<p class="empty-state">Nothing here.</p>'}</div>`;
     }).join("");
@@ -245,8 +245,9 @@
     const task = currentTasks.find(item => item.id === taskId);
     if (!task || !detailsDialog) return;
     const rawStatus = taskStatus(task);
+    const terminalDone = ["DONE", "DONE - ABANDONED"].includes(rawStatus);
     detailsTitle.textContent = task.title;
-    detailsContent.innerHTML = `<div class="details-status"><span class="status-pill ${statusClass(rawStatus)}">${escapeHtml(statusLabels[rawStatus] || rawStatus)}</span><span>${escapeHtml(columns.find(([key]) => key === statusSection(task))?.[1] || "Up next")}</span></div><dl class="details-grid"><div><dt>Lead</dt><dd>${escapeHtml(task.source_lead || task.assignee || "Unassigned")}</dd></div><div><dt>Stage</dt><dd>${escapeHtml(task.source_stage || "Not set")}</dd></div><div><dt>Task est completion</dt><dd>${escapeHtml(task.source_completion_percent ?? (rawStatus === "DONE" ? 100 : "Not set"))}${task.source_completion_percent !== null && task.source_completion_percent !== undefined || rawStatus === "DONE" ? "%" : ""}</dd></div><div><dt>Priority</dt><dd>${escapeHtml(task.priority || "Not set")}</dd></div><div><dt>Scope / team</dt><dd>${escapeHtml([task.source_scope, task.source_team].filter(Boolean).join(" / ") || "Not recorded")}</dd></div><div><dt>Due</dt><dd>${escapeHtml(dateText(task.due_date))}</dd></div></dl><div class="details-copy"><h3>Description</h3><p>${escapeHtml(task.description || "No description recorded.")}</p></div><dl class="details-list"><div><dt>Blocker</dt><dd>${escapeHtml(task.source_blocker || "None")}</dd></div><div><dt>Waiting for</dt><dd>${escapeHtml(task.source_waiting_for || "None")}</dd></div><div><dt>Active specialists</dt><dd>${escapeHtml(listText(task.source_active_specialists))}</dd></div><div><dt>Completed stages</dt><dd>${escapeHtml(listText(task.source_completed_stages))}</dd></div><div><dt>Reference</dt><dd>${escapeHtml(task.source_reference || "None")}</dd></div><div><dt>Last work update</dt><dd>${escapeHtml(taskTimestamp(task) ? new Date(taskTimestamp(task)).toLocaleString() : "Not recorded")}</dd></div></dl>`;
+    detailsContent.innerHTML = `<div class="details-status"><span class="status-pill ${statusClass(rawStatus)}">${escapeHtml(statusLabels[rawStatus] || rawStatus)}</span><span>${escapeHtml(columns.find(([key]) => key === statusSection(task))?.[1] || "Up next")}</span></div><dl class="details-grid"><div><dt>Lead</dt><dd>${escapeHtml(task.source_lead || task.assignee || "Unassigned")}</dd></div><div><dt>Stage</dt><dd>${escapeHtml(task.source_stage || "Not set")}</dd></div><div><dt>Task est completion</dt><dd>${escapeHtml(task.source_completion_percent ?? (terminalDone ? 100 : "Not set"))}${task.source_completion_percent !== null && task.source_completion_percent !== undefined || terminalDone ? "%" : ""}</dd></div><div><dt>Priority</dt><dd>${escapeHtml(task.priority || "Not set")}</dd></div><div><dt>Scope / team</dt><dd>${escapeHtml([task.source_scope, task.source_team].filter(Boolean).join(" / ") || "Not recorded")}</dd></div><div><dt>Due</dt><dd>${escapeHtml(dateText(task.due_date))}</dd></div></dl><div class="details-copy"><h3>Description</h3><p>${escapeHtml(task.description || "No description recorded.")}</p></div><dl class="details-list"><div><dt>Blocker</dt><dd>${escapeHtml(task.source_blocker || "None")}</dd></div><div><dt>Waiting for</dt><dd>${escapeHtml(task.source_waiting_for || "None")}</dd></div><div><dt>Active specialists</dt><dd>${escapeHtml(listText(task.source_active_specialists))}</dd></div><div><dt>Completed stages</dt><dd>${escapeHtml(listText(task.source_completed_stages))}</dd></div><div><dt>Reference</dt><dd>${escapeHtml(task.source_reference || "None")}</dd></div><div><dt>Last work update</dt><dd>${escapeHtml(taskTimestamp(task) ? new Date(taskTimestamp(task)).toLocaleString() : "Not recorded")}</dd></div></dl>`;
     detailsAddNote.dataset.taskId = taskId;
     detailsDialog.showModal();
   }
