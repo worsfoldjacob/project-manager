@@ -4,4 +4,5 @@
 .status-pill{font-weight:800}.work-update-fields dt,.details-grid dt,.details-list dt{font-weight:800}.task-card h4,.column-title h3,.section-head h2,.section-title h2{font-weight:800}.map-up-next b{color:#a7cefb}.map-in-progress b{color:#a4e1bf}.map-in-review b{color:#f1ca8a}.map-done b{color:var(--accent-strong)}
 @media(max-width:760px){.board-controls{align-items:flex-start;gap:8px;flex-direction:column}.status-map{line-height:1.6}.details-grid,.details-list{grid-template-columns:1fr}}
 .status-todo{border-color:#405f82;background:#1d3248;color:#a7cefb}.status-queued,.status-stalled{border-color:#654e83;background:#2c213d;color:#d4b9f5}.status-waiting-for-human{border-color:#80613b;background:#3b3022;color:#f1ca8a}
-.status-queued{border-color:#28606b;background:#163c45;color:#9be4ec}.status-stalled{border-color:#654e83;background:#2c213d;color:#d4b9f5}
+.status-queued{border-color:#28606b;background:#163c45;color:#9be4ec}.status-stalled{border-color:#654e83;background:#2c213d;color:#d4b9f5}.status-done-abandoned{border-color:#687b8f;background:#202b36;color:#c5d0d9}
+.mark,.brand-mark{display:block;overflow:hidden;padding:0;object-fit:cover}.mark{border:1px solid #30475e}.brand-mark{flex-shrink:0;border:1px solid #30475e}

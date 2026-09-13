@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeSourceTask } from "./task-mapping.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "https://pm.w-software.net",
@@ -8,49 +9,6 @@ const cors = {
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: cors });
-
-const slugify = (value: string) => value.toLowerCase().trim()
-  .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "project";
-
-const statusMap: Record<string, string> = {
-  TODO: "up_next",
-  QUEUED: "up_next",
-  "IN PROGRESS": "in_progress",
-  "WAITING FOR HUMAN": "in_review",
-  STALLED: "in_review",
-  BLOCKED: "in_review",
-  DONE: "done",
-};
-
-const priorityMap: Record<string, string> = {
-  low: "low", normal: "medium", medium: "medium", high: "high", urgent: "urgent",
-};
-
-const text = (value: unknown) => String(value ?? "").trim();
-const isoOrNull = (value: unknown) => {
-  const candidate = text(value);
-  if (!candidate) return null;
-  const date = new Date(candidate);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-};
-const arrayOrEmpty = (value: unknown) => Array.isArray(value) ? value : [];
-const completion = (value: unknown) => {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return null;
-  return Math.max(0, Math.min(100, Math.round(number)));
-};
-const leadFor = (task: Record<string, unknown>) => {
-  const explicit = text(task.lead);
-  if (explicit) return explicit;
-  const team = text(task.executingTeam || task.team || task.ownerAgent);
-  const key = team.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  const known: Record<string, string> = {
-    cayde: "Cayde / PA Lead", pa: "PA Lead", development: "Development Lead",
-    business: "Business Lead", marketing: "Marketing Lead", markets: "Markets Lead",
-    sports: "Sports Lead", game: "Game Lead",
-  };
-  return known[key] ?? (team ? `${team} Lead` : "Unassigned");
-};
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -74,19 +32,9 @@ Deno.serve(async (request) => {
   let synced = 0;
 
   for (const task of body.tasks) {
-    const sourceTaskId = String(task.id ?? "").trim();
-    const projectName = String(task.project ?? "Unassigned").trim() || "Unassigned";
-    if (!sourceTaskId || !String(task.title ?? "").trim()) continue;
-    const sourceStatus = text(task.status).toUpperCase() || "TODO";
-    const sourceUpdatedAt = isoOrNull(task.lastUpdate || task.updatedAt || task.lastActivityAt || task.createdAt);
-    const sourceCreatedAt = isoOrNull(task.createdAt);
-    const sourceDescription = text(task.description);
-    const contextDescription = [
-      text(task.currentStage) ? `Stage: ${text(task.currentStage)}` : "",
-      text(task.blocker) ? `Blocker: ${text(task.blocker)}` : "",
-      text(task.waitingFor) ? `Waiting for: ${text(task.waitingFor)}` : "",
-    ].filter(Boolean).join("\n");
-    const sourceKey = slugify(projectName);
+    const normalized = normalizeSourceTask(task);
+    if (!normalized) continue;
+    const { sourceTaskId, projectName, sourceKey, row } = normalized;
     let projectId = projects.get(sourceKey);
     if (!projectId) {
       const { data: existing, error: findError } = await db.from("projects")
@@ -107,26 +55,7 @@ Deno.serve(async (request) => {
     const { error } = await db.from("tasks").upsert({
       project_id: projectId,
       source_task_id: sourceTaskId,
-      title: String(task.title),
-      description: sourceDescription || contextDescription || null,
-      status: statusMap[sourceStatus] ?? "backlog",
-      priority: priorityMap[text(task.priority).toLowerCase() || "normal"] ?? "medium",
-      assignee: text(task.ownerAgent) || null,
-      due_date: text(task.dueAt) ? text(task.dueAt).slice(0, 10) : null,
-      updated_at: sourceUpdatedAt || undefined,
-      source_status: sourceStatus,
-      source_scope: text(task.scope) || null,
-      source_team: text(task.executingTeam || task.team) || null,
-      source_lead: leadFor(task),
-      source_stage: text(task.currentStage) || null,
-      source_completion_percent: completion(task.estimatedCompletionPercent ?? task.completionPercent ?? task.taskEstCompletion),
-      source_active_specialists: arrayOrEmpty(task.activeSpecialists),
-      source_completed_stages: arrayOrEmpty(task.completedStages),
-      source_blocker: text(task.blocker) || null,
-      source_waiting_for: text(task.waitingFor) || null,
-      source_reference: text(task.reference) || null,
-      source_created_at: sourceCreatedAt,
-      source_updated_at: sourceUpdatedAt,
+      ...row,
     }, { onConflict: "project_id,source_task_id" });
     if (error) return json({ error: "task_upsert_failed" }, 500);
     synced++;
